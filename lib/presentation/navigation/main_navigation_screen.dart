@@ -6,7 +6,7 @@ import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/create_content_screen.dart';
-import '../screens/qa_chat_screen.dart';
+import '../screens/enhanced_qa_chat_screen.dart';
 import '../screens/lesson_planner_screen.dart';
 import '../screens/profile_settings_screen.dart';
 import '../widgets/instant_assist_fab.dart';
@@ -152,7 +152,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     return [
       _buildTabNavigator(0, const DashboardScreen()),
       _buildTabNavigator(1, const CreateContentScreen()),
-      _buildTabNavigator(2, const QAChatScreen()),
+      _buildTabNavigator(2, const EnhancedQAChatScreen()),
       _buildTabNavigator(3, const LessonPlannerScreen()),
       _buildTabNavigator(4, const ProfileSettingsScreen()),
     ];

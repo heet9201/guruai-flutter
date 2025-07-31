@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/responsive_layout.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
+import 'weekly_planner_demo.dart';
 
 class LessonPlannerScreen extends StatefulWidget {
   const LessonPlannerScreen({super.key});
@@ -18,7 +19,7 @@ class _LessonPlannerScreenState extends State<LessonPlannerScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -57,6 +58,10 @@ class _LessonPlannerScreenState extends State<LessonPlannerScreen>
                         icon: const Icon(Icons.library_books),
                         text: _getTemplatesLabel(languageCode),
                       ),
+                      Tab(
+                        icon: const Icon(Icons.calendar_view_week),
+                        text: _getWeeklyPlannerLabel(languageCode),
+                      ),
                     ],
                   ),
                 ),
@@ -68,6 +73,7 @@ class _LessonPlannerScreenState extends State<LessonPlannerScreen>
                 _buildMyPlansTab(context, languageCode),
                 _buildCreateNewTab(context, languageCode),
                 _buildTemplatesTab(context, languageCode),
+                const WeeklyPlannerDemo(),
               ],
             ),
           ),
@@ -683,6 +689,31 @@ class _LessonPlannerScreenState extends State<LessonPlannerScreen>
         return 'வார்ப்புருக்கள்';
       default:
         return 'Templates';
+    }
+  }
+
+  String _getWeeklyPlannerLabel(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'साप्ताहिक योजना';
+      case 'mr':
+        return 'साप्ताहिक योजना';
+      case 'ta':
+        return 'வார திட்டம்';
+      case 'te':
+        return 'వారపు ప్రణాళిక';
+      case 'kn':
+        return 'ವಾರದ ಯೋಜನೆ';
+      case 'ml':
+        return 'പ്രാപ്തി പദ്ധതി';
+      case 'gu':
+        return 'સાપ્તાહિક યોજના';
+      case 'bn':
+        return 'সাপ্তাহিক পরিকল্পনা';
+      case 'pa':
+        return 'ਹਫਤਾਵਾਰੀ ਯੋਜਨਾ';
+      default:
+        return 'Weekly Planner';
     }
   }
 
