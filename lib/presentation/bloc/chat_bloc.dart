@@ -11,6 +11,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/usecases/chat_usecases.dart';
+import '../../data/repositories/offline_repository.dart';
+import '../../core/services/network_connectivity_service.dart';
+import '../../core/services/sync_service.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
 
@@ -28,6 +31,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   late final FlutterSoundRecorder _audioRecorder;
   late final StreamSubscription<List<ConnectivityResult>>
       _connectivitySubscription;
+
+  // Offline services
+  final OfflineRepository _offlineRepository = OfflineRepository.instance;
+  final NetworkConnectivityService _networkService =
+      NetworkConnectivityService.instance;
+  final SyncService _syncService = SyncService.instance;
 
   String _currentSessionId = '';
   Timer? _typingTimer;
@@ -174,20 +183,69 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         isTyping: true,
       ));
 
-      // Save message locally
-      if (_isConnected) {
+      // Save message based on connectivity
+      if (_networkService.isOnline) {
         await sendMessageUseCase.execute(userMessage, _currentSessionId);
       } else {
-        // Add to offline queue
-        // await addToOfflineQueueUseCase.execute(userMessage);
+        // Add to offline queue for later sync
+        await _syncService.addToSyncQueue(
+          actionType: 'send_message',
+          data: {
+            'message': {
+              'id': userMessage.id,
+              'text': userMessage.text,
+              'isUser': userMessage.isUser,
+              'timestamp': userMessage.timestamp.toIso8601String(),
+              'type': userMessage.type.toString(),
+              'language': userMessage.language,
+            },
+            'sessionId': _currentSessionId,
+          },
+          priority: SyncPriority.normal,
+        );
       }
 
-      // Simulate AI response
-      await Future.delayed(const Duration(seconds: 2));
+      // Try to get AI response
+      String aiResponseText;
+      bool isFromCache = false;
+
+      if (_networkService.canPerformAction('ai_request')) {
+        // Generate fresh AI response
+        aiResponseText =
+            _generateAIResponse(event.text, currentState.currentLanguage);
+
+        // Cache the response for offline use
+        await _offlineRepository.cacheAiResponse(
+          id: const Uuid().v4(),
+          category: _getCategoryFromMessage(event.text),
+          query: event.text,
+          response: aiResponseText,
+          languageCode: currentState.currentLanguage,
+        );
+      } else {
+        // Get cached response
+        final cachedResponses = await _offlineRepository.getCachedAiResponses(
+          category: _getCategoryFromMessage(event.text),
+          languageCode: currentState.currentLanguage,
+          limit: 1,
+        );
+
+        if (cachedResponses.isNotEmpty) {
+          aiResponseText = cachedResponses.first['response'] as String;
+          isFromCache = true;
+        } else {
+          aiResponseText =
+              _getOfflineFallbackResponse(currentState.currentLanguage);
+          isFromCache = true;
+        }
+      }
+
+      // Simulate AI response delay
+      await Future.delayed(const Duration(seconds: 1));
 
       final aiResponse = ChatMessage(
         id: const Uuid().v4(),
-        text: _generateAIResponse(event.text, currentState.currentLanguage),
+        text: aiResponseText,
         isUser: false,
         timestamp: DateTime.now(),
         language: currentState.currentLanguage,
@@ -201,13 +259,15 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         lastMessageAt: DateTime.now(),
       );
 
-      if (_isConnected) {
+      if (_networkService.isOnline) {
         await sendMessageUseCase.execute(aiResponse, _currentSessionId);
       }
 
       emit(currentState.copyWith(
         session: finalSession,
         isTyping: false,
+        isOfflineMode: !_networkService.isOnline,
+        lastResponseFromCache: isFromCache,
       ));
     } catch (e) {
       emit(ChatError('Failed to send message: ${e.toString()}'));
@@ -639,5 +699,42 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
 
     return super.close();
+  }
+
+  String _getCategoryFromMessage(String message) {
+    final lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.contains('lesson') || lowerMessage.contains('plan')) {
+      return 'lesson_planning';
+    } else if (lowerMessage.contains('quiz') ||
+        lowerMessage.contains('test') ||
+        lowerMessage.contains('assessment')) {
+      return 'assessment';
+    } else if (lowerMessage.contains('story') ||
+        lowerMessage.contains('narrative')) {
+      return 'storytelling';
+    } else if (lowerMessage.contains('math') ||
+        lowerMessage.contains('calculate')) {
+      return 'mathematics';
+    } else if (lowerMessage.contains('science') ||
+        lowerMessage.contains('experiment')) {
+      return 'science';
+    } else if (lowerMessage.contains('grammar') ||
+        lowerMessage.contains('language')) {
+      return 'language_arts';
+    }
+
+    return 'general';
+  }
+
+  String _getOfflineFallbackResponse(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'मैं वर्तमान में ऑफ़लाइन हूं। कृपया इंटरनेट कनेक्शन की जांच करें और दोबारा कोशिश करें। मैं बुनियादी सहायता प्रदान कर सकता हूं।';
+      case 'te':
+        return 'नेను प्रस्तुतम् ऑफ़्लैन्लो उन्नानु. दयचेसि इन्टर्नेट् कनेक्शन्नु तनिखी चेसि मल्ली प्रयत्निंचण्डि. नेनु प्राथमिक सहायम् अन्दिंचगलनु.';
+      default:
+        return 'I\'m currently offline. Please check your internet connection and try again. I can provide basic assistance with cached information.';
+    }
   }
 }

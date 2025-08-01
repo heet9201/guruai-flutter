@@ -23,6 +23,8 @@ class ChatLoaded extends ChatState {
   final String currentLanguage;
   final bool isConnected;
   final List<ChatMessage> offlineQueue;
+  final bool isOfflineMode;
+  final bool lastResponseFromCache;
 
   const ChatLoaded({
     required this.session,
@@ -35,6 +37,8 @@ class ChatLoaded extends ChatState {
     this.currentLanguage = 'en',
     this.isConnected = true,
     this.offlineQueue = const [],
+    this.isOfflineMode = false,
+    this.lastResponseFromCache = false,
   });
 
   ChatLoaded copyWith({
@@ -48,6 +52,8 @@ class ChatLoaded extends ChatState {
     String? currentLanguage,
     bool? isConnected,
     List<ChatMessage>? offlineQueue,
+    bool? isOfflineMode,
+    bool? lastResponseFromCache,
   }) {
     return ChatLoaded(
       session: session ?? this.session,
@@ -60,6 +66,9 @@ class ChatLoaded extends ChatState {
       currentLanguage: currentLanguage ?? this.currentLanguage,
       isConnected: isConnected ?? this.isConnected,
       offlineQueue: offlineQueue ?? this.offlineQueue,
+      isOfflineMode: isOfflineMode ?? this.isOfflineMode,
+      lastResponseFromCache:
+          lastResponseFromCache ?? this.lastResponseFromCache,
     );
   }
 
@@ -75,6 +84,8 @@ class ChatLoaded extends ChatState {
         currentLanguage,
         isConnected,
         offlineQueue,
+        isOfflineMode,
+        lastResponseFromCache,
       ];
 }
 
