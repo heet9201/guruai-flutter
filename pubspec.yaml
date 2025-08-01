@@ -95,12 +95,27 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
+  # Testing frameworks
+  integration_test:
+    sdk: flutter
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
+  test: ^1.24.9
+
+  # Widget testing
+  patrol: ^3.6.1
+  golden_toolkit: ^0.15.0
+
+  # Accessibility testing
+  flutter_accessibility_service: ^0.2.2
+
+  # Performance testing
+  flutter_driver:
+    sdk: flutter
+
+  # Code quality
   flutter_lints: ^4.0.0
+  very_good_analysis: ^5.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

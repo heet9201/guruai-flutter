@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
+import '../accessibility/accessible_themes.dart';
 
 /// Comprehensive theme system for Sahayak educational app
 class AppTheme {
@@ -470,6 +471,33 @@ class AppTheme {
         outline: isDark ? Colors.white : Colors.black,
         onSurface: isDark ? Colors.white : Colors.black,
       ),
+    );
+  }
+
+  /// Create accessible theme with enhanced contrast and text scaling
+  static ThemeData accessibleTheme({
+    String languageCode = 'en',
+    bool isDark = false,
+    bool isHighContrast = false,
+    double textScaleFactor = 1.0,
+  }) {
+    return AccessibleThemeData.createLightTheme(
+      isHighContrast: isHighContrast,
+      textScaleFactor: textScaleFactor,
+      languageCode: languageCode,
+    );
+  }
+
+  /// Create accessible dark theme
+  static ThemeData accessibleDarkTheme({
+    String languageCode = 'en',
+    bool isHighContrast = false,
+    double textScaleFactor = 1.0,
+  }) {
+    return AccessibleThemeData.createDarkTheme(
+      isHighContrast: isHighContrast,
+      textScaleFactor: textScaleFactor,
+      languageCode: languageCode,
     );
   }
 }
