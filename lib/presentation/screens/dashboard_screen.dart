@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/responsive_layout.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
+import '../utils/app_navigator.dart';
+import '../widgets/enhanced_instant_assist_fab_v2.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -80,6 +82,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
+          ),
+          // Enhanced Instant Assist FAB
+          floatingActionButton: EnhancedInstantAssistFAB(
+            languageCode: languageCode,
+            isOnline: true, // You can add connectivity detection here
           ),
         );
       },
@@ -686,7 +693,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _onRecommendationTap(Map<String, dynamic> recommendation) {
     // Handle recommendation action
-    print('Recommendation tapped: ${recommendation['title']}');
+    AppNavigator.navigateToRecommendation(context, recommendation);
   }
 
   void _onNotificationTap(Map<String, dynamic> notification) {

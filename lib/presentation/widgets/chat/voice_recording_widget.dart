@@ -238,7 +238,7 @@ class WaveformPainter extends CustomPainter {
     for (int i = 0; i < waveformData.length; i++) {
       final barHeight = waveformData[i] * size.height;
       final opacity = isAnimating
-          ? (0.3 + 0.7 * sin(animationValue * 2 * pi + i * 0.5)).abs()
+          ? (0.3 + 0.7 * sin(animationValue * 2 * pi + i * 0.5)).abs().clamp(0.0, 1.0)
           : 1.0;
 
       paint.color = color.withOpacity(opacity);

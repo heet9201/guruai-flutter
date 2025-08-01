@@ -107,12 +107,12 @@ class _MessageSearchWidgetState extends State<MessageSearchWidget>
                   tooltip: 'Search messages',
                 )
               else
-                AnimatedBuilder(
-                  animation: _slideAnimation,
-                  builder: (context, child) {
-                    return Expanded(
-                      flex: (_slideAnimation.value * 100).round(),
-                      child: Container(
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: _slideAnimation,
+                    builder: (context, child) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
                         height: 40,
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surfaceVariant,
@@ -142,9 +142,9 @@ class _MessageSearchWidgetState extends State<MessageSearchWidget>
                           },
                           onSubmitted: (_) => _performSearch(),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               if (_isSearching) ...[
                 const SizedBox(width: 8),

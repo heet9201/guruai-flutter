@@ -4,12 +4,12 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../core/theme/responsive_layout.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
-import '../screens/dashboard_screen.dart';
+import '../screens/enhanced_dashboard_screen.dart';
 import '../screens/create_content_screen.dart';
 import '../screens/enhanced_qa_chat_screen.dart';
 import '../screens/lesson_planner_screen.dart';
 import '../screens/profile_settings_screen.dart';
-import '../widgets/instant_assist_fab.dart';
+import '../widgets/enhanced_instant_assist_fab_v2.dart';
 import '../widgets/offline_indicator.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -150,7 +150,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
   List<Widget> _buildPages() {
     return [
-      _buildTabNavigator(0, const DashboardScreen()),
+      _buildTabNavigator(0, const EnhancedDashboardScreen()),
       _buildTabNavigator(1, const CreateContentScreen()),
       _buildTabNavigator(2, const EnhancedQAChatScreen()),
       _buildTabNavigator(3, const LessonPlannerScreen()),
@@ -206,7 +206,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
           ),
           floatingActionButton: ScaleTransition(
             scale: _fabAnimation,
-            child: InstantAssistFAB(
+            child: EnhancedInstantAssistFAB(
               languageCode: languageCode,
               isOnline: _isOnline,
             ),

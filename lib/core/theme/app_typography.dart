@@ -44,15 +44,16 @@ class SahayakTypography {
     required Color primaryColor,
     required Color onSurfaceColor,
   }) {
-    // Choose font family based on language
+    // Always use Poppins for headers as specified in requirements
     TextStyle Function({
       Color? color,
       double? fontSize,
       FontWeight? fontWeight,
       double? letterSpacing,
       double? height,
-    }) headingFont;
+    }) headingFont = GoogleFonts.poppins;
 
+    // Choose body font family based on language, but fallback to Inter for English
     TextStyle Function({
       Color? color,
       double? fontSize,
@@ -63,43 +64,33 @@ class SahayakTypography {
 
     switch (languageCode) {
       case 'hi': // Hindi
-        headingFont = GoogleFonts.notoSansDevanagari;
         bodyFont = GoogleFonts.notoSansDevanagari;
         break;
       case 'mr': // Marathi
-        headingFont = GoogleFonts.notoSansDevanagari;
         bodyFont = GoogleFonts.notoSansDevanagari;
         break;
       case 'ta': // Tamil
-        headingFont = GoogleFonts.notoSansTamil;
         bodyFont = GoogleFonts.notoSansTamil;
         break;
       case 'te': // Telugu
-        headingFont = GoogleFonts.notoSansTelugu;
         bodyFont = GoogleFonts.notoSansTelugu;
         break;
       case 'kn': // Kannada
-        headingFont = GoogleFonts.notoSansKannada;
         bodyFont = GoogleFonts.notoSansKannada;
         break;
       case 'ml': // Malayalam
-        headingFont = GoogleFonts.notoSansMalayalam;
         bodyFont = GoogleFonts.notoSansMalayalam;
         break;
       case 'gu': // Gujarati
-        headingFont = GoogleFonts.notoSansGujarati;
         bodyFont = GoogleFonts.notoSansGujarati;
         break;
       case 'bn': // Bengali
-        headingFont = GoogleFonts.notoSansBengali;
         bodyFont = GoogleFonts.notoSansBengali;
         break;
       case 'pa': // Punjabi
-        headingFont = GoogleFonts.notoSansGurmukhi;
         bodyFont = GoogleFonts.notoSansGurmukhi;
         break;
-      default: // English and other languages
-        headingFont = GoogleFonts.poppins;
+      default: // English and other languages - always use Poppins for headers, Inter for body
         bodyFont = GoogleFonts.inter;
         break;
     }

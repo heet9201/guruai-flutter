@@ -87,13 +87,15 @@ class _TypingIndicatorState extends State<TypingIndicator>
                         final delay = index * 0.2;
                         final animValue =
                             (_animation.value - delay).clamp(0.0, 1.0);
+                        // Ensure opacity stays within valid range
+                        final opacity = (0.5 + animValue * 0.5).clamp(0.0, 1.0);
                         return Container(
                           margin: const EdgeInsets.symmetric(horizontal: 1),
                           width: 4,
                           height: 4 + (animValue * 4),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primary
-                                .withOpacity(0.5 + animValue * 0.5),
+                                .withOpacity(opacity),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         );

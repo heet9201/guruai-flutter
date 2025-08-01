@@ -4,9 +4,9 @@ import 'app_colors.dart';
 import 'app_typography.dart';
 import '../accessibility/accessible_themes.dart';
 
-/// Comprehensive theme system for Sahayak educational app
+/// Comprehensive theme system for Sahayak educational app with enhanced warm earth tones
 class AppTheme {
-  /// Creates light theme with optional language code for typography
+  /// Creates light theme with optional language code for typography - "Classroom Mode"
   static ThemeData lightTheme({String languageCode = 'en'}) {
     final colorScheme = SahayakColorScheme.light;
     final textTheme = SahayakTypography.lightTextTheme(languageCode);
@@ -17,46 +17,51 @@ class AppTheme {
       colorScheme: colorScheme,
       textTheme: textTheme,
 
-      // App Bar Theme
+      // App Bar Theme - Clean and inviting
       appBarTheme: AppBarTheme(
-        centerTitle: true,
+        centerTitle: false, // Left-aligned for better UX
         elevation: 0,
         scrolledUnderElevation: 1,
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        titleTextStyle: textTheme.titleLarge,
+        backgroundColor: SahayakColors.lightBackground,
+        foregroundColor: SahayakColors.charcoal,
+        titleTextStyle: textTheme.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
         toolbarTextStyle: textTheme.bodyMedium,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
+        surfaceTintColor: Colors.transparent,
       ),
 
-      // Card Theme
+      // Card Theme - Soft shadows and warm tones
       cardTheme: CardTheme(
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
-        surfaceTintColor: colorScheme.surfaceContainerHighest,
+        shadowColor: SahayakColors.charcoal.withOpacity(0.1),
+        surfaceTintColor: SahayakColors.warmIvory,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius:
+              BorderRadius.circular(20), // More rounded for friendliness
         ),
         margin: const EdgeInsets.all(8),
       ),
 
-      // Elevated Button Theme
+      // Elevated Button Theme - Primary actions with ochre
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.tertiary, // Deep teal for action buttons
-          foregroundColor: colorScheme.onTertiary,
+          backgroundColor: SahayakColors.ochre,
+          foregroundColor: Colors.white,
           elevation: 2,
-          shadowColor: Colors.black.withOpacity(0.2),
+          shadowColor: SahayakColors.ochre.withOpacity(0.3),
           padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 16,
+            horizontal: 32, // Larger touch targets
+            vertical: 20,
           ),
-          minimumSize: const Size(120, 48),
+          minimumSize: const Size(120, 56), // Better accessibility
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           textStyle: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
       ),
@@ -64,81 +69,87 @@ class AppTheme {
       // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: colorScheme.primary,
+          foregroundColor: SahayakColors.deepTeal,
           padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+            horizontal: 24,
+            vertical: 16,
           ),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
       // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.primary,
+          foregroundColor: SahayakColors.burntSienna,
           side: BorderSide(
-            color: colorScheme.outline,
-            width: 1.5,
+            color: SahayakColors.burntSienna,
+            width: 2,
           ),
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
             vertical: 16,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
-      // Input Decoration Theme
+      // Input Decoration Theme - Enhanced for educational content
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceContainerHighest,
+        fillColor: SahayakColors.warmIvory,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
+          horizontal: 20,
+          vertical: 20,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.outline,
+            color: SahayakColors.outlineLight,
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.outline,
+            color: SahayakColors.outlineLight,
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.primary,
+            color: SahayakColors.deepTeal,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.error,
-            width: 1,
+            color: SahayakColors.lightError,
+            width: 2,
           ),
         ),
-        labelStyle: textTheme.bodyMedium,
+        labelStyle: textTheme.bodyLarge?.copyWith(
+          color: SahayakColors.charcoal.withOpacity(0.7),
+        ),
         hintStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface.withOpacity(0.6),
+          color: SahayakColors.charcoal.withOpacity(0.5),
         ),
       ),
 
-      // Floating Action Button Theme
+      // Floating Action Button Theme - Enhanced with gradient
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colorScheme.tertiary,
-        foregroundColor: colorScheme.onTertiary,
-        elevation: 4,
+        backgroundColor: SahayakColors.ochre,
+        foregroundColor: Colors.white,
+        elevation: 6,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -146,15 +157,15 @@ class AppTheme {
 
       // Chip Theme
       chipTheme: ChipThemeData(
-        backgroundColor: colorScheme.surfaceContainerHighest,
-        selectedColor: colorScheme.tertiary,
-        secondarySelectedColor: colorScheme.secondary,
+        backgroundColor: SahayakColors.warmIvory,
+        selectedColor: SahayakColors.ochre,
+        secondarySelectedColor: SahayakColors.deepTeal,
         labelStyle: textTheme.labelMedium,
         secondaryLabelStyle: textTheme.labelMedium?.copyWith(
-          color: colorScheme.onSecondary,
+          color: Colors.white,
         ),
         brightness: Brightness.light,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -162,51 +173,66 @@ class AppTheme {
 
       // Dialog Theme
       dialogTheme: DialogTheme(
-        backgroundColor: colorScheme.surface,
-        elevation: 8,
+        backgroundColor: SahayakColors.lightSurface,
+        elevation: 12,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
-        titleTextStyle: textTheme.headlineSmall,
+        titleTextStyle: textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
         contentTextStyle: textTheme.bodyMedium,
       ),
 
       // Bottom Sheet Theme
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: colorScheme.surface,
-        elevation: 8,
+        backgroundColor: SahayakColors.lightSurface,
+        elevation: 12,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
+            top: Radius.circular(24),
           ),
         ),
       ),
 
       // Snack Bar Theme
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: colorScheme.inverseSurface,
+        backgroundColor: SahayakColors.charcoal,
         contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onInverseSurface,
+          color: SahayakColors.chalkWhite,
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
 
-      // Navigation Bar Theme
+      // Navigation Bar Theme - Enhanced for thumb reach
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: colorScheme.surface,
-        elevation: 3,
+        backgroundColor: SahayakColors.lightSurface,
+        elevation: 8,
+        height: 70, // Optimized for thumb reach
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return textTheme.labelSmall?.copyWith(
-              color: colorScheme.primary,
+            return textTheme.labelMedium?.copyWith(
+              color: SahayakColors.ochre,
               fontWeight: FontWeight.w600,
             );
           }
-          return textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurface.withOpacity(0.7),
+          return textTheme.labelMedium?.copyWith(
+            color: SahayakColors.charcoal.withOpacity(0.6),
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(
+              color: SahayakColors.ochre,
+              size: 28,
+            );
+          }
+          return IconThemeData(
+            color: SahayakColors.charcoal.withOpacity(0.6),
+            size: 24,
           );
         }),
       ),
@@ -214,12 +240,14 @@ class AppTheme {
       // List Tile Theme
       listTileTheme: ListTileThemeData(
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
+          horizontal: 20,
           vertical: 8,
         ),
-        titleTextStyle: textTheme.bodyLarge,
+        titleTextStyle: textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
         subtitleTextStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface.withOpacity(0.7),
+          color: SahayakColors.charcoal.withOpacity(0.7),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -228,7 +256,7 @@ class AppTheme {
     );
   }
 
-  /// Creates dark theme (Blackboard Mode) with optional language code
+  /// Creates dark theme (Enhanced Blackboard Mode) with optional language code
   static ThemeData darkTheme({String languageCode = 'en'}) {
     final colorScheme = SahayakColorScheme.dark;
     final textTheme = SahayakTypography.darkTextTheme(languageCode);
@@ -239,46 +267,52 @@ class AppTheme {
       colorScheme: colorScheme,
       textTheme: textTheme,
 
-      // App Bar Theme
+      // App Bar Theme - Blackboard aesthetic
       appBarTheme: AppBarTheme(
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 1,
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        titleTextStyle: textTheme.titleLarge,
+        backgroundColor: SahayakColors.darkBackground,
+        foregroundColor: SahayakColors.chalkWhite,
+        titleTextStyle: textTheme.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: SahayakColors.chalkWhite,
+        ),
         toolbarTextStyle: textTheme.bodyMedium,
         systemOverlayStyle: SystemUiOverlayStyle.light,
+        surfaceTintColor: Colors.transparent,
       ),
 
-      // Card Theme
+      // Card Theme - Elevated blackboard panels
       cardTheme: CardTheme(
         elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.3),
-        surfaceTintColor: colorScheme.surfaceContainerHighest,
+        shadowColor: Colors.black.withOpacity(0.4),
+        surfaceTintColor: SahayakColors.darkSurface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         margin: const EdgeInsets.all(8),
+        color: SahayakColors.darkSurface,
       ),
 
-      // Elevated Button Theme
+      // Elevated Button Theme - Chalk-inspired
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.tertiary,
-          foregroundColor: colorScheme.onTertiary,
+          backgroundColor: SahayakColors.darkPrimary,
+          foregroundColor: SahayakColors.darkBackground,
           elevation: 3,
-          shadowColor: Colors.black.withOpacity(0.4),
+          shadowColor: SahayakColors.darkPrimary.withOpacity(0.4),
           padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 16,
+            horizontal: 32,
+            vertical: 20,
           ),
-          minimumSize: const Size(120, 48),
+          minimumSize: const Size(120, 56),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           textStyle: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
       ),
@@ -286,81 +320,87 @@ class AppTheme {
       // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: colorScheme.primary,
+          foregroundColor: SahayakColors.darkTertiary,
           padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+            horizontal: 24,
+            vertical: 16,
           ),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
       // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.primary,
+          foregroundColor: SahayakColors.darkSecondary,
           side: BorderSide(
-            color: colorScheme.outline,
-            width: 1.5,
+            color: SahayakColors.darkSecondary,
+            width: 2,
           ),
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
             vertical: 16,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
-      // Input Decoration Theme
+      // Input Decoration Theme - Chalk on blackboard
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceContainerHighest,
+        fillColor: SahayakColors.darkSurface,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
+          horizontal: 20,
+          vertical: 20,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.outline,
+            color: SahayakColors.outlineDark,
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.outline,
+            color: SahayakColors.outlineDark,
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.primary,
+            color: SahayakColors.darkTertiary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: colorScheme.error,
-            width: 1,
+            color: SahayakColors.darkError,
+            width: 2,
           ),
         ),
-        labelStyle: textTheme.bodyMedium,
+        labelStyle: textTheme.bodyLarge?.copyWith(
+          color: SahayakColors.chalkWhite.withOpacity(0.7),
+        ),
         hintStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface.withOpacity(0.6),
+          color: SahayakColors.chalkWhite.withOpacity(0.5),
         ),
       ),
 
-      // Floating Action Button Theme
+      // Floating Action Button Theme - Glowing chalk
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colorScheme.tertiary,
-        foregroundColor: colorScheme.onTertiary,
-        elevation: 6,
+        backgroundColor: SahayakColors.darkPrimary,
+        foregroundColor: SahayakColors.darkBackground,
+        elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -368,15 +408,17 @@ class AppTheme {
 
       // Chip Theme
       chipTheme: ChipThemeData(
-        backgroundColor: colorScheme.surfaceContainerHighest,
-        selectedColor: colorScheme.tertiary,
-        secondarySelectedColor: colorScheme.secondary,
-        labelStyle: textTheme.labelMedium,
+        backgroundColor: SahayakColors.darkSurface,
+        selectedColor: SahayakColors.darkPrimary,
+        secondarySelectedColor: SahayakColors.darkTertiary,
+        labelStyle: textTheme.labelMedium?.copyWith(
+          color: SahayakColors.chalkWhite,
+        ),
         secondaryLabelStyle: textTheme.labelMedium?.copyWith(
-          color: colorScheme.onSecondary,
+          color: SahayakColors.darkBackground,
         ),
         brightness: Brightness.dark,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -384,51 +426,69 @@ class AppTheme {
 
       // Dialog Theme
       dialogTheme: DialogTheme(
-        backgroundColor: colorScheme.surface,
-        elevation: 12,
+        backgroundColor: SahayakColors.darkSurface,
+        elevation: 16,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
-        titleTextStyle: textTheme.headlineSmall,
-        contentTextStyle: textTheme.bodyMedium,
+        titleTextStyle: textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: SahayakColors.chalkWhite,
+        ),
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: SahayakColors.chalkWhite,
+        ),
       ),
 
       // Bottom Sheet Theme
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: colorScheme.surface,
-        elevation: 12,
+        backgroundColor: SahayakColors.darkSurface,
+        elevation: 16,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
+            top: Radius.circular(24),
           ),
         ),
       ),
 
       // Snack Bar Theme
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: colorScheme.inverseSurface,
+        backgroundColor: SahayakColors.darkPrimary,
         contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onInverseSurface,
+          color: SahayakColors.darkBackground,
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
 
-      // Navigation Bar Theme
+      // Navigation Bar Theme - Blackboard bottom rail
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: colorScheme.surface,
-        elevation: 6,
+        backgroundColor: SahayakColors.darkSurface,
+        elevation: 12,
+        height: 70,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return textTheme.labelSmall?.copyWith(
-              color: colorScheme.primary,
+            return textTheme.labelMedium?.copyWith(
+              color: SahayakColors.darkPrimary,
               fontWeight: FontWeight.w600,
             );
           }
-          return textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSurface.withOpacity(0.7),
+          return textTheme.labelMedium?.copyWith(
+            color: SahayakColors.chalkWhite.withOpacity(0.6),
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(
+              color: SahayakColors.darkPrimary,
+              size: 28,
+            );
+          }
+          return IconThemeData(
+            color: SahayakColors.chalkWhite.withOpacity(0.6),
+            size: 24,
           );
         }),
       ),
@@ -436,12 +496,15 @@ class AppTheme {
       // List Tile Theme
       listTileTheme: ListTileThemeData(
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
+          horizontal: 20,
           vertical: 8,
         ),
-        titleTextStyle: textTheme.bodyLarge,
+        titleTextStyle: textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: SahayakColors.chalkWhite,
+        ),
         subtitleTextStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface.withOpacity(0.7),
+          color: SahayakColors.chalkWhite.withOpacity(0.7),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
