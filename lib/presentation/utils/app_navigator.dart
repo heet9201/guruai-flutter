@@ -12,7 +12,7 @@ class AppNavigator {
     Map<String, dynamic>? metadata,
   }) async {
     HapticFeedback.lightImpact();
-    
+
     try {
       await Navigator.of(context).push(
         MaterialPageRoute(
@@ -37,9 +37,10 @@ class AppNavigator {
   ) async {
     final contentType = recommendation['type'] as String? ?? 'content';
     final subject = recommendation['subject'] as String?;
-    final topic = recommendation['topic'] as String? ?? recommendation['title'] as String?;
+    final topic = recommendation['topic'] as String? ??
+        recommendation['title'] as String?;
     final difficulty = recommendation['difficulty'] as String?;
-    
+
     await navigateToContentCreation(
       context,
       contentType: contentType,

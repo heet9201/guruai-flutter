@@ -114,10 +114,10 @@ class AnimationManager {
     bool isVisible = true,
   }) {
     return StaggeredListAnimation(
-      children: children,
       staggerDelay: staggerDelay ?? const Duration(milliseconds: 100),
       itemDuration: itemDuration ?? defaultDuration,
       isVisible: isVisible,
+      children: children,
     );
   }
 
@@ -277,14 +277,14 @@ class AnimationManager {
     late OverlayEntry entry;
 
     entry = OverlayEntry(
-      builder: (context) => Positioned(
+      builder: (context) => const Positioned(
         top: 100,
         left: 0,
         right: 0,
         child: Center(
           child: SwipeIndicator(
             isVisible: true,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         ),
       ),

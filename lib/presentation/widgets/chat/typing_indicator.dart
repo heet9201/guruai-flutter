@@ -94,8 +94,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
                           width: 4,
                           height: 4 + (animValue * 4),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary
-                                .withOpacity(opacity),
+                            color:
+                                theme.colorScheme.primary.withOpacity(opacity),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         );

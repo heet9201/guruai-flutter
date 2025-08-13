@@ -4,7 +4,7 @@ import '../../core/theme/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
-import '../widgets/enhanced_cards.dart';
+import '../bloc/dashboard/dashboard_bloc.dart';
 import '../widgets/quick_action_grid.dart';
 import '../widgets/recent_activities_widget.dart';
 import '../widgets/progress_dashboard.dart';
@@ -20,7 +20,6 @@ class EnhancedDashboardScreen extends StatefulWidget {
 
 class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen>
     with TickerProviderStateMixin {
-  bool _isLoading = false;
   late AnimationController _welcomeAnimationController;
   late AnimationController _cardsAnimationController;
   late Animation<double> _welcomeSlideAnimation;
@@ -72,70 +71,178 @@ class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen>
     super.dispose();
   }
 
-  Future<void> _onRefresh() async {
-    setState(() {
-      _isLoading = true;
-    });
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => DashboardBloc()..add(DashboardStarted()),
+      child: BlocBuilder<AppBloc, AppState>(
+        builder: (context, appState) {
+          final languageCode =
+              appState is AppLoaded ? appState.languageCode : 'en';
+          final isDarkMode =
+              appState is AppLoaded ? appState.isDarkMode : false;
 
-    // Simulate refresh with gentle loading
-    await Future.delayed(const Duration(milliseconds: 1500));
+          return BlocBuilder<DashboardBloc, DashboardState>(
+            builder: (context, dashboardState) {
+              return Scaffold(
+                backgroundColor: isDarkMode
+                    ? SahayakColors.darkBackground
+                    : SahayakColors.lightBackground,
+                body: SafeArea(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<DashboardBloc>().add(DashboardRefresh());
+                    },
+                    color: SahayakColors.deepTeal,
+                    backgroundColor: isDarkMode
+                        ? SahayakColors.darkSurface
+                        : SahayakColors.lightSurface,
+                    child: _buildContent(
+                        context, languageCode, isDarkMode, dashboardState),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+  Widget _buildContent(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardState dashboardState) {
+    switch (dashboardState.runtimeType) {
+      case DashboardLoading:
+        return _buildLoadingState(context, isDarkMode);
+      case DashboardError:
+        return _buildErrorState(context, languageCode, isDarkMode,
+            dashboardState as DashboardError);
+      case DashboardLoaded:
+        return _buildLoadedState(context, languageCode, isDarkMode,
+            dashboardState as DashboardLoaded);
+      default:
+        return _buildLoadingState(context, isDarkMode);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AppBloc, AppState>(
-      builder: (context, state) {
-        final languageCode = state is AppLoaded ? state.languageCode : 'en';
-        final isDarkMode = state is AppLoaded ? state.isDarkMode : false;
-
-        return Scaffold(
-          backgroundColor: isDarkMode
-              ? SahayakColors.darkBackground
-              : SahayakColors.lightBackground,
-          body: SafeArea(
-            child: RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: SahayakColors.deepTeal,
-              backgroundColor: isDarkMode
-                  ? SahayakColors.darkSurface
-                  : SahayakColors.lightSurface,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // Custom App Bar with gentle animations
-                  _buildAnimatedAppBar(context, languageCode, isDarkMode),
-
-                  // Welcome section with teacher greeting
-                  _buildWelcomeSection(context, languageCode, isDarkMode),
-
-                  // Today's overview with quick stats
-                  _buildTodayOverview(context, languageCode, isDarkMode),
-
-                  // Quick actions grid - 3 taps or less workflow
-                  _buildQuickActionsGrid(context, languageCode, isDarkMode),
-
-                  // Recent activities with progress
-                  _buildRecentActivities(context, languageCode, isDarkMode),
-
-                  // Insights and recommendations
-                  _buildInsightsSection(context, languageCode, isDarkMode),
-
-                  // Bottom padding for FAB
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 100),
+  Widget _buildLoadingState(BuildContext context, bool isDarkMode) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        _buildAnimatedAppBar(context, 'en', isDarkMode),
+        SliverFillRemaining(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: SahayakColors.deepTeal,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Loading dashboard...',
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? SahayakColors.chalkWhite
+                        : SahayakColors.charcoal,
+                    fontSize: 16,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardError errorState) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        _buildAnimatedAppBar(context, languageCode, isDarkMode),
+        SliverFillRemaining(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: isDarkMode
+                      ? SahayakColors.chalkWhite
+                      : SahayakColors.charcoal,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load dashboard',
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? SahayakColors.chalkWhite
+                        : SahayakColors.charcoal,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorState.message,
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? SahayakColors.chalkWhite.withOpacity(0.7)
+                        : SahayakColors.charcoal.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<DashboardBloc>().add(DashboardStarted());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: SahayakColors.deepTeal,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadedState(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardLoaded loadedState) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        // Custom App Bar with gentle animations
+        _buildAnimatedAppBar(context, languageCode, isDarkMode),
+
+        // Welcome section with teacher greeting
+        _buildWelcomeSection(context, languageCode, isDarkMode),
+
+        // Today's overview with quick stats
+        _buildTodayOverview(context, languageCode, isDarkMode, loadedState),
+
+        // Quick actions grid - 3 taps or less workflow
+        _buildQuickActionsGrid(context, languageCode, isDarkMode, loadedState),
+
+        // Recent activities with progress
+        _buildRecentActivities(context, languageCode, isDarkMode, loadedState),
+
+        // Insights and recommendations
+        _buildInsightsSection(context, languageCode, isDarkMode, loadedState),
+
+        // Bottom padding for FAB
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 100),
+        ),
+      ],
     );
   }
 
@@ -405,8 +512,8 @@ class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen>
     );
   }
 
-  Widget _buildTodayOverview(
-      BuildContext context, String languageCode, bool isDarkMode) {
+  Widget _buildTodayOverview(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardLoaded loadedState) {
     return SliverToBoxAdapter(
       child: Container(
         margin: ResponsiveLayout.getScreenPadding(context),
@@ -434,8 +541,8 @@ class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen>
     );
   }
 
-  Widget _buildQuickActionsGrid(
-      BuildContext context, String languageCode, bool isDarkMode) {
+  Widget _buildQuickActionsGrid(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardLoaded loadedState) {
     return SliverToBoxAdapter(
       child: Container(
         margin: ResponsiveLayout.getScreenPadding(context),
@@ -469,8 +576,8 @@ class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen>
     );
   }
 
-  Widget _buildRecentActivities(
-      BuildContext context, String languageCode, bool isDarkMode) {
+  Widget _buildRecentActivities(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardLoaded loadedState) {
     return SliverToBoxAdapter(
       child: Container(
         margin: ResponsiveLayout.getScreenPadding(context),
@@ -518,8 +625,8 @@ class _EnhancedDashboardScreenState extends State<EnhancedDashboardScreen>
     );
   }
 
-  Widget _buildInsightsSection(
-      BuildContext context, String languageCode, bool isDarkMode) {
+  Widget _buildInsightsSection(BuildContext context, String languageCode,
+      bool isDarkMode, DashboardLoaded loadedState) {
     return SliverToBoxAdapter(
       child: Container(
         margin: ResponsiveLayout.getScreenPadding(context),

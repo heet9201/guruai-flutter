@@ -94,7 +94,7 @@ class _GradeSwitchGestureDetectorState extends State<GradeSwitchGestureDetector>
   }
 
   void _processGesture() {
-    if (_initialCenter == null || _pointers.length < 1) return;
+    if (_initialCenter == null || _pointers.isEmpty) return;
 
     final currentCenter = _getCenterPoint();
     final deltaX = currentCenter.dx - _initialCenter!.dx;

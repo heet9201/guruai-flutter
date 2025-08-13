@@ -99,71 +99,72 @@ class _EnhancedInstantAssistFABState extends State<EnhancedInstantAssistFAB>
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         // Action buttons arranged vertically for better UX
         if (_isExpanded) ..._buildActionButtons(context, screenSize),
-        
+
         const SizedBox(height: 16),
-        
+
         // Main FAB
         AnimatedBuilder(
           animation: _breathingAnimation,
           builder: (context, child) {
-            final breathingScale = _isExpanded ? 1.0 : _breathingAnimation.value;
-              // Clamp the breathing scale to ensure it stays within valid range
-              final safeScale = breathingScale.clamp(0.95, 1.1);
-              
-              return Transform.scale(
-                scale: safeScale,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        SahayakColors.ochre,
-                        SahayakColors.burntSienna,
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: SahayakColors.ochre.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
+            final breathingScale =
+                _isExpanded ? 1.0 : _breathingAnimation.value;
+            // Clamp the breathing scale to ensure it stays within valid range
+            final safeScale = breathingScale.clamp(0.95, 1.1);
+
+            return Transform.scale(
+              scale: safeScale,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      SahayakColors.ochre,
+                      SahayakColors.burntSienna,
                     ],
                   ),
-                  child: FloatingActionButton(
-                    onPressed: _toggleExpanded,
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    heroTag: "enhanced_main_fab",
-                    tooltip: _getMainFABTooltip(widget.languageCode),
-                    child: AnimatedBuilder(
-                      animation: _rotationAnimation,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                          angle: _rotationAnimation.value * 2 * 3.14159,
-                          child: Icon(
-                            _isExpanded ? Icons.close : Icons.auto_awesome,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        );
-                      },
+                  boxShadow: [
+                    BoxShadow(
+                      color: SahayakColors.ochre.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
+                  ],
+                ),
+                child: FloatingActionButton(
+                  onPressed: _toggleExpanded,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  heroTag: "enhanced_main_fab",
+                  tooltip: _getMainFABTooltip(widget.languageCode),
+                  child: AnimatedBuilder(
+                    animation: _rotationAnimation,
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: _rotationAnimation.value * 2 * 3.14159,
+                        child: Icon(
+                          _isExpanded ? Icons.close : Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      );
+                    },
                   ),
                 ),
-              );
-            },
-          ),
-        ],
-      );
+              ),
+            );
+          },
+        ),
+      ],
+    );
   }
 
   List<Widget> _buildActionButtons(BuildContext context, Size screenSize) {
@@ -204,7 +205,7 @@ class _EnhancedInstantAssistFABState extends State<EnhancedInstantAssistFAB>
           // Ensure opacity is always between 0.0 and 1.0
           final opacity = _scaleAnimation.value.clamp(0.0, 1.0);
           final scale = _scaleAnimation.value.clamp(0.0, 1.0);
-          
+
           return AnimatedOpacity(
             opacity: opacity,
             duration: Duration(milliseconds: 150 + (index * 50)),
@@ -243,9 +244,9 @@ class _EnhancedInstantAssistFABState extends State<EnhancedInstantAssistFAB>
               ),
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Action button
           Container(
             width: 56,
@@ -285,7 +286,8 @@ class _EnhancedInstantAssistFABState extends State<EnhancedInstantAssistFAB>
                       size: 24,
                     ),
                     // Offline indicator
-                    if (!widget.isOnline && _actionRequiresInternet(action.actionType))
+                    if (!widget.isOnline &&
+                        _actionRequiresInternet(action.actionType))
                       Positioned(
                         right: 4,
                         top: 4,

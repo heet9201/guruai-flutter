@@ -4,10 +4,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/localization/app_locales.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/services/service_locator.dart';
 import 'core/accessibility/accessibility_manager.dart';
 import 'presentation/bloc/app_bloc.dart';
 import 'presentation/bloc/app_event.dart';
 import 'presentation/bloc/app_state.dart';
+import 'presentation/screens/auth_wrapper.dart';
+import 'presentation/screens/login_screen.dart';
+import 'presentation/screens/register_screen.dart';
 import 'presentation/navigation/main_navigation_screen.dart';
 
 void main() async {
@@ -15,6 +19,9 @@ void main() async {
 
   // Initialize dependency injection
   await di.initializeDependencies();
+
+  // Initialize API services
+  ServiceLocator.setup();
 
   runApp(const SahayakApp());
 }
@@ -63,7 +70,14 @@ class SahayakApp extends StatelessWidget {
               AccessibilityManager.initialize(context);
               return child!;
             },
-            home: const MainNavigationScreen(),
+            // Set up routing
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const AuthWrapper(),
+              '/login': (context) => const LoginScreen(),
+              '/register': (context) => const RegisterScreen(),
+              '/main': (context) => const MainNavigationScreen(),
+            },
           );
         },
       ),

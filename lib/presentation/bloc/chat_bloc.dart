@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+// import 'package:speech_to_text/speech_to_text.dart';  // Temporarily disabled
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -27,7 +27,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ProcessOfflineQueueUseCase processOfflineQueueUseCase;
 
   late final FlutterTts _flutterTts;
-  late final SpeechToText _speechToText;
+  // late final SpeechToText _speechToText;  // Temporarily disabled
   late final FlutterSoundRecorder _audioRecorder;
   late final StreamSubscription<List<ConnectivityResult>>
       _connectivitySubscription;
@@ -78,7 +78,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   void _initializeServices() async {
     _flutterTts = FlutterTts();
-    _speechToText = SpeechToText();
+    // _speechToText = SpeechToText();  // Temporarily disabled
     _audioRecorder = FlutterSoundRecorder();
 
     // Initialize the recorder
@@ -347,11 +347,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
 
       // Initialize speech recognition
-      bool speechAvailable = await _speechToText.initialize();
-      if (!speechAvailable) {
-        emit(ChatError('Speech recognition not available'));
-        return;
-      }
+      // bool speechAvailable = await _speechToText.initialize();  // Temporarily disabled
+      // if (!speechAvailable) {
+      //   emit(ChatError('Speech recognition not available'));
+      //   return;
+      // }
 
       // Ensure recorder is initialized
       if (!_isRecorderInitialized) {
@@ -429,17 +429,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         final file = File(path);
         if (await file.exists()) {
           // Start speech recognition
-          _speechToText.listen(
-            onResult: (result) {
-              if (result.finalResult && result.recognizedWords.isNotEmpty) {
-                add(SendMessage(
-                  text: result.recognizedWords,
-                  type: MessageType.voice,
-                  voiceFilePath: path,
-                ));
-              }
-            },
-          );
+          // _speechToText.listen(  // Temporarily disabled
+          //   onResult: (result) {
+          //     if (result.finalResult && result.recognizedWords.isNotEmpty) {
+          //       add(SendMessage(
+          //         text: result.recognizedWords,
+          //         type: MessageType.voice,
+          //         voiceFilePath: path,
+          //       ));
+          //     }
+          //   },
+          // );
+
+          // For now, just send the voice file without transcription
+          add(SendMessage(
+            text: 'Voice message recorded',
+            type: MessageType.voice,
+            voiceFilePath: path,
+          ));
         } else {
           emit(ChatError('Recording file not found'));
           return;
@@ -684,7 +691,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     _recordingTimer?.cancel();
     _connectivitySubscription.cancel();
     _flutterTts.stop();
-    _speechToText.stop();
+    // _speechToText.stop();  // Temporarily disabled
 
     // Properly close the recorder
     if (_isRecorderInitialized) {

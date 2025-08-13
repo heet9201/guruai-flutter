@@ -10,12 +10,11 @@ class SlidePageRoute<T> extends PageRouteBuilder<T> {
     required this.child,
     this.direction = SlideDirection.rightToLeft,
     this.duration = const Duration(milliseconds: 300),
-    RouteSettings? settings,
+    super.settings,
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => child,
           transitionDuration: duration,
           reverseTransitionDuration: duration,
-          settings: settings,
         );
 
   @override
@@ -69,12 +68,11 @@ class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
   FadeScalePageRoute({
     required this.child,
     this.duration = const Duration(milliseconds: 400),
-    RouteSettings? settings,
+    super.settings,
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => child,
           transitionDuration: duration,
           reverseTransitionDuration: duration,
-          settings: settings,
         );
 
   @override

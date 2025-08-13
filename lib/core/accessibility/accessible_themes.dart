@@ -89,7 +89,7 @@ class AccessibleThemeData {
         style: ElevatedButton.styleFrom(
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          minimumSize: Size(
+          minimumSize: const Size(
             AccessibilityConstants.minTouchTarget,
             AccessibilityConstants.minTouchTarget,
           ),
@@ -118,7 +118,7 @@ class AccessibleThemeData {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: colorScheme.primary,
-          minimumSize: Size(
+          minimumSize: const Size(
             AccessibilityConstants.minTouchTarget,
             AccessibilityConstants.minTouchTarget,
           ),
@@ -146,7 +146,7 @@ class AccessibleThemeData {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.primary,
-          minimumSize: Size(
+          minimumSize: const Size(
             AccessibilityConstants.minTouchTarget,
             AccessibilityConstants.minTouchTarget,
           ),
@@ -171,7 +171,7 @@ class AccessibleThemeData {
       // Icon button theme
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          minimumSize: Size(
+          minimumSize: const Size(
             AccessibilityConstants.minTouchTarget,
             AccessibilityConstants.minTouchTarget,
           ),
@@ -316,13 +316,13 @@ class AccessibleThemeData {
       ),
 
       // Radio theme
-      radioTheme: RadioThemeData(
+      radioTheme: const RadioThemeData(
         materialTapTargetSize: MaterialTapTargetSize.padded,
         visualDensity: VisualDensity.comfortable,
       ),
 
       // Switch theme
-      switchTheme: SwitchThemeData(
+      switchTheme: const SwitchThemeData(
         materialTapTargetSize: MaterialTapTargetSize.padded,
       ),
 

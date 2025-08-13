@@ -4,6 +4,7 @@ import '../../core/theme/responsive_layout.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
 import '../bloc/app_event.dart';
+import '../bloc/auth/auth_bloc.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({super.key});
@@ -309,6 +310,14 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             leading: const Icon(Icons.privacy_tip),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => _showPrivacySettings(context, languageCode),
+          ),
+          const Divider(),
+          ListTile(
+            title: Text(_getLogoutTitle(languageCode)),
+            subtitle: Text(_getLogoutDescription(languageCode)),
+            leading: Icon(Icons.logout, color: Colors.red[600]),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => _showLogoutDialog(context, languageCode),
           ),
         ],
       ),
@@ -1088,6 +1097,112 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         return 'சஹாயக் ஒரு AI-இயங்கும் கற்பித்தல் உதவியாளர் ஆகும், இது ஆசிரியர்களுக்கு சிறந்த கல்வி உள்ளடக்கத்தை உருவாக்க உதவுகிறது.';
       default:
         return 'Sahayak is an AI-powered teaching assistant that helps teachers create better educational content.';
+    }
+  }
+
+  String _getLogoutTitle(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'लॉग आउट';
+      case 'mr':
+        return 'लॉग आउट';
+      case 'ta':
+        return 'வெளியேறு';
+      default:
+        return 'Logout';
+    }
+  }
+
+  String _getLogoutDescription(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'अपने खाते से सुरक्षित रूप से बाहर निकलें';
+      case 'mr':
+        return 'तुमच्या खात्यातून सुरक्षितपणे बाहेर पडा';
+      case 'ta':
+        return 'உங்கள் கணக்கிலிருந்து பாதுகாப்பாக வெளியேறுங்கள்';
+      default:
+        return 'Sign out of your account securely';
+    }
+  }
+
+  void _showLogoutDialog(BuildContext context, String languageCode) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_getLogoutConfirmationTitle(languageCode)),
+        content: Text(_getLogoutConfirmationMessage(languageCode)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(_getCancelButtonText(languageCode)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.read<AuthBloc>().add(AuthLogoutRequested());
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(_getLogoutButtonText(languageCode)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getLogoutConfirmationTitle(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'लॉग आउट की पुष्टि';
+      case 'mr':
+        return 'लॉग आउटची पुष्टी';
+      case 'ta':
+        return 'வெளியேற்றம் உறுதிப்படுத்தல்';
+      default:
+        return 'Confirm Logout';
+    }
+  }
+
+  String _getLogoutConfirmationMessage(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'क्या आप वाकई अपने खाते से लॉग आउट करना चाहते हैं?';
+      case 'mr':
+        return 'तुम्ही खरोखर तुमच्या खात्यातून लॉग आउट करू इच्छिता का?';
+      case 'ta':
+        return 'நீங்கள் உண்மையிலேயே உங்கள் கணக்கிலிருந்து வெளியேற விரும்புகிறீர்களா?';
+      default:
+        return 'Are you sure you want to logout from your account?';
+    }
+  }
+
+  String _getCancelButtonText(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'रद्द करें';
+      case 'mr':
+        return 'रद्द करा';
+      case 'ta':
+        return 'ரத்து செய்';
+      default:
+        return 'Cancel';
+    }
+  }
+
+  String _getLogoutButtonText(String languageCode) {
+    switch (languageCode) {
+      case 'hi':
+        return 'लॉग आउट';
+      case 'mr':
+        return 'लॉग आउट';
+      case 'ta':
+        return 'வெளியேறு';
+      default:
+        return 'Logout';
     }
   }
 }

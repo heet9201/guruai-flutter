@@ -117,3 +117,11 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
+BACKEND_API_DOCUMENTATION.md
+CHAT_INTERFACE_README.md
+final_opacity_fix_summary.sh
+flutter_fixes_summary.sh
+FLUTTER_FRONTEND_GUIDE.md
+Sahayak_Backend_API.postman_collection.json
+verify_fixes.sh
+lib/OFFLINE_IMPLEMENTATION.md

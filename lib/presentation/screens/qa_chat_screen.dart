@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../../core/theme/responsive_layout.dart';
+import '../../core/services/service_locator.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
 
@@ -11,35 +14,103 @@ class QAChatScreen extends StatefulWidget {
   State<QAChatScreen> createState() => _QAChatScreenState();
 }
 
-class _QAChatScreenState extends State<QAChatScreen> {
+class _QAChatScreenState extends State<QAChatScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
+  late AnimationController _typingAnimationController;
+  late AnimationController _messageAnimationController;
+  final FocusNode _textFieldFocusNode = FocusNode();
+  static const String _cacheKey = 'qa_chat_messages';
 
   @override
   void initState() {
     super.initState();
+    _initializeAnimations();
+    _loadCachedMessages();
     _initializeChat();
   }
 
+  void _initializeAnimations() {
+    _typingAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _messageAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _typingAnimationController.repeat();
+  }
+
+  Future<void> _loadCachedMessages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString(_cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> messagesList = jsonDecode(cachedData);
+        setState(() {
+          _messages.clear();
+          _messages.addAll(
+            messagesList
+                .map((msg) => ChatMessage(
+                      text: msg['text'] ?? '',
+                      isUser: msg['isUser'] ?? false,
+                      timestamp: DateTime.parse(
+                          msg['timestamp'] ?? DateTime.now().toIso8601String()),
+                    ))
+                .toList(),
+          );
+        });
+      }
+    } catch (e) {
+      print('Error loading cached messages: $e');
+    }
+  }
+
+  Future<void> _saveCachedMessages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final messagesData = _messages
+          .map((msg) => {
+                'text': msg.text,
+                'isUser': msg.isUser,
+                'timestamp': msg.timestamp.toIso8601String(),
+              })
+          .toList();
+      await prefs.setString(_cacheKey, jsonEncode(messagesData));
+    } catch (e) {
+      print('Error saving cached messages: $e');
+    }
+  }
+
   void _initializeChat() {
-    // Add welcome message
-    _messages.add(ChatMessage(
-      text: 'Hello! I\'m your AI teaching assistant. How can I help you today?',
-      isUser: false,
-      timestamp: DateTime.now(),
-    ));
+    // Add welcome message only if no cached messages
+    if (_messages.isEmpty) {
+      _messages.add(ChatMessage(
+        text:
+            'Hello! I\'m your AI teaching assistant. How can I help you today?',
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
+      _saveCachedMessages();
+    }
   }
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _typingAnimationController.dispose();
+    _messageAnimationController.dispose();
+    _textFieldFocusNode.dispose();
     super.dispose();
   }
 
-  void _sendMessage(String languageCode) {
+  void _sendMessage(String languageCode) async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
@@ -53,10 +124,43 @@ class _QAChatScreenState extends State<QAChatScreen> {
       _isTyping = true;
     });
 
+    // Save messages to cache
+    _saveCachedMessages();
     _scrollToBottom();
 
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      // Use the real chat service
+      final chatService = ServiceLocator.chatService;
+      final chatResponse = await chatService.sendMessage(
+        message: text,
+        conversationId:
+            'qa_conversation_${DateTime.now().millisecondsSinceEpoch}',
+        maxTokens: 1000,
+        temperature: 0.7,
+      );
+
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: chatResponse.response,
+            isUser: false,
+            timestamp: DateTime.now(),
+          ));
+          _isTyping = false;
+        });
+
+        // Save updated messages to cache
+        _saveCachedMessages();
+        _scrollToBottom();
+
+        // Trigger message animation
+        _messageAnimationController.forward().then((_) {
+          _messageAnimationController.reset();
+        });
+      }
+    } catch (e) {
+      print('Error sending message: $e');
+      // Fallback to demo response if API fails
       if (mounted) {
         setState(() {
           _messages.add(ChatMessage(
@@ -66,9 +170,17 @@ class _QAChatScreenState extends State<QAChatScreen> {
           ));
           _isTyping = false;
         });
+
+        // Save updated messages to cache
+        _saveCachedMessages();
         _scrollToBottom();
+
+        // Trigger message animation
+        _messageAnimationController.forward().then((_) {
+          _messageAnimationController.reset();
+        });
       }
-    });
+    }
   }
 
   String _generateAIResponse(String userMessage, String languageCode) {
@@ -116,7 +228,14 @@ class _QAChatScreenState extends State<QAChatScreen> {
                 padding: EdgeInsets.all(
                     ResponsiveLayout.getHorizontalPadding(context)),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      Theme.of(context).colorScheme.surface,
+                    ],
+                  ),
                   border: Border(
                     bottom: BorderSide(
                       color: Theme.of(context)
@@ -125,21 +244,49 @@ class _QAChatScreenState extends State<QAChatScreen> {
                           .withOpacity(0.2),
                     ),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: SafeArea(
                   bottom: false,
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.primaryContainer,
-                        child: Icon(
-                          Icons.smart_toy,
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
+                      Hero(
+                        tag: 'header_ai_avatar',
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 24,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primaryContainer,
+                            child: Icon(
+                              Icons.smart_toy,
+                              size: 28,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,27 +295,87 @@ class _QAChatScreenState extends State<QAChatScreen> {
                               _getAIAssistantTitle(languageCode),
                               style: Theme.of(context)
                                   .textTheme
-                                  .titleMedium
+                                  .titleLarge
                                   ?.copyWith(
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                             ),
-                            Text(
-                              _getOnlineStatus(languageCode),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
                                     color: Colors.green,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.green.withOpacity(0.5),
+                                        blurRadius: 4,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
                                   ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _getOnlineStatus(languageCode),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => _showChatInfo(context, languageCode),
-                        icon: const Icon(Icons.info_outline),
-                        tooltip: _getInfoTooltip(languageCode),
+                      Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              onPressed: () => _clearChat(),
+                              icon: Icon(
+                                Icons.refresh_rounded,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              tooltip: 'Clear Chat',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              onPressed: () =>
+                                  _showChatInfo(context, languageCode),
+                              icon: Icon(
+                                Icons.info_outline_rounded,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              tooltip: _getInfoTooltip(languageCode),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -177,17 +384,43 @@ class _QAChatScreenState extends State<QAChatScreen> {
 
               // Chat messages
               Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.all(
-                      ResponsiveLayout.getHorizontalPadding(context)),
-                  itemCount: _messages.length + (_isTyping ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _messages.length && _isTyping) {
-                      return _buildTypingIndicator();
-                    }
-                    return _buildMessageBubble(_messages[index]);
-                  },
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Theme.of(context).colorScheme.surface,
+                        Theme.of(context).colorScheme.surface.withOpacity(0.95),
+                      ],
+                    ),
+                  ),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(
+                        ResponsiveLayout.getHorizontalPadding(context)),
+                    itemCount: _messages.length + (_isTyping ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _messages.length && _isTyping) {
+                        return _buildTypingIndicator();
+                      }
+                      return TweenAnimationBuilder<double>(
+                        duration: Duration(milliseconds: 300 + (index * 50)),
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        curve: Curves.easeOutBack,
+                        builder: (context, value, child) {
+                          return Transform.translate(
+                            offset: Offset(0, 20 * (1 - value)),
+                            child: Opacity(
+                              opacity: value,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: _buildMessageBubble(_messages[index]),
+                      );
+                    },
+                  ),
                 ),
               ),
 
@@ -201,55 +434,100 @@ class _QAChatScreenState extends State<QAChatScreen> {
   }
 
   Widget _buildMessageBubble(ChatMessage message) {
-    return Padding(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment:
-            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!message.isUser) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              child: Icon(
-                Icons.smart_toy,
-                size: 16,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: message.isUser
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(20).copyWith(
-                  bottomRight: message.isUser ? const Radius.circular(4) : null,
-                  bottomLeft: !message.isUser ? const Radius.circular(4) : null,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: message.isUser ? const Offset(0.3, 0) : const Offset(-0.3, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: _messageAnimationController,
+          curve: Curves.elasticOut,
+        )),
+        child: Row(
+          mainAxisAlignment:
+              message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!message.isUser) ...[
+              Hero(
+                tag: 'ai_avatar',
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.smart_toy,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message.text,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: message.isUser
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+              const SizedBox(width: 12),
+            ],
+            Flexible(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.75,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: message.isUser
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(20).copyWith(
+                    bottomRight:
+                        message.isUser ? const Radius.circular(6) : null,
+                    bottomLeft:
+                        !message.isUser ? const Radius.circular(6) : null,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatTime(message.timestamp),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message.text,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: message.isUser
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurface,
+                            height: 1.4,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          message.isUser ? Icons.done_all : Icons.auto_awesome,
+                          size: 12,
                           color: message.isUser
                               ? Theme.of(context)
                                   .colorScheme
@@ -257,77 +535,172 @@ class _QAChatScreenState extends State<QAChatScreen> {
                                   .withOpacity(0.7)
                               : Theme.of(context)
                                   .colorScheme
-                                  .onSurfaceVariant
+                                  .onSurface
                                   .withOpacity(0.7),
                         ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatTime(message.timestamp),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: message.isUser
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary
+                                            .withOpacity(0.7)
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.7),
+                                    fontSize: 11,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (message.isUser) ...[
+              const SizedBox(width: 12),
+              Hero(
+                tag: 'user_avatar',
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.secondaryContainer,
+                    child: Icon(
+                      Icons.person,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-          if (message.isUser) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-              child: Icon(
-                Icons.person,
-                size: 16,
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
-              ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildTypingIndicator() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Icon(
-              Icons.smart_toy,
-              size: 16,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(20).copyWith(
-                bottomLeft: const Radius.circular(4),
+    return AnimatedOpacity(
+      opacity: _isTyping ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 300),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Row(
+          children: [
+            Hero(
+              tag: 'typing_ai_avatar',
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
+                  child: Icon(
+                    Icons.smart_toy,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < 3; i++) ...[
-                  AnimatedContainer(
-                    duration: Duration(milliseconds: 600 + (i * 200)),
-                    curve: Curves.easeInOut,
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      shape: BoxShape.circle,
-                    ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20).copyWith(
+                  bottomLeft: const Radius.circular(6),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  if (i < 2) const SizedBox(width: 4),
                 ],
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < 3; i++) ...[
+                    AnimatedBuilder(
+                      animation: _typingAnimationController,
+                      builder: (context, child) {
+                        final double value =
+                            (_typingAnimationController.value - (i * 0.2)) %
+                                1.0;
+                        final double opacity =
+                            value < 0.5 ? value * 2 : (1 - value) * 2;
+                        final double scale = 0.6 + (opacity * 0.4);
+
+                        return Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(opacity),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    if (i < 2) const SizedBox(width: 4),
+                  ],
+                  const SizedBox(width: 8),
+                  Text(
+                    'AI is thinking...',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -342,54 +715,143 @@ class _QAChatScreenState extends State<QAChatScreen> {
             color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
             // Quick action buttons
-            IconButton(
-              onPressed: () => _showQuickActions(context, languageCode),
-              icon: const Icon(Icons.add),
-              tooltip: _getQuickActionsTooltip(languageCode),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                onPressed: () => _showQuickActions(context, languageCode),
+                icon: Icon(
+                  Icons.add,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+                tooltip: _getQuickActionsTooltip(languageCode),
+              ),
             ),
+
+            const SizedBox(width: 12),
 
             // Message text field
             Expanded(
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: _getMessageHint(languageCode),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor:
-                      Theme.of(context).colorScheme.surfaceContainerHighest,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
-                onSubmitted: (_) => _sendMessage(languageCode),
+                child: TextField(
+                  controller: _messageController,
+                  focusNode: _textFieldFocusNode,
+                  decoration: InputDecoration(
+                    hintText: _getMessageHint(languageCode),
+                    hintStyle: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                    suffixIcon: _isTyping
+                        ? Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 16,
+                  ),
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
+                  onSubmitted: (_) => _sendMessage(languageCode),
+                  onChanged: (text) {
+                    // Add some interactivity
+                    setState(() {});
+                  },
+                ),
               ),
             ),
 
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
 
             // Send button
-            IconButton(
-              onPressed: _isTyping ? null : () => _sendMessage(languageCode),
-              icon: Icon(
-                _isTyping ? Icons.hourglass_empty : Icons.send,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                color: _messageController.text.trim().isEmpty
+                    ? Theme.of(context).colorScheme.outline.withOpacity(0.3)
+                    : Theme.of(context).colorScheme.primary,
+                shape: BoxShape.circle,
+                boxShadow: _messageController.text.trim().isEmpty
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
-              tooltip: _getSendTooltip(languageCode),
-              style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              child: IconButton(
+                onPressed: _isTyping || _messageController.text.trim().isEmpty
+                    ? null
+                    : () => _sendMessage(languageCode),
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    _isTyping ? Icons.hourglass_empty : Icons.send_rounded,
+                    key: ValueKey(_isTyping),
+                    color: _messageController.text.trim().isEmpty
+                        ? Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.5)
+                        : Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+                tooltip: _getSendTooltip(languageCode),
               ),
             ),
           ],
@@ -401,7 +863,37 @@ class _QAChatScreenState extends State<QAChatScreen> {
   void _showQuickActions(BuildContext context, String languageCode) {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => _QuickActionsSheet(languageCode: languageCode),
+    );
+  }
+
+  void _clearChat() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Chat'),
+        content: const Text(
+            'Are you sure you want to clear all messages? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _messages.clear();
+                _initializeChat();
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
     );
   }
 

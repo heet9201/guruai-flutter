@@ -348,6 +348,7 @@ class NetworkConnectivityService extends ChangeNotifier {
   }
 
   /// Dispose resources
+  @override
   void dispose() {
     _connectivitySubscription.cancel();
     _networkQualityTimer?.cancel();
