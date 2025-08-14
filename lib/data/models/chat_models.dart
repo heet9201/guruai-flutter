@@ -17,10 +17,10 @@ class ChatMessageModel extends ChatMessage {
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
     return ChatMessageModel(
-      id: json['id'],
-      text: json['text'],
-      isUser: json['isUser'],
-      timestamp: DateTime.parse(json['timestamp']),
+      id: json['id'] ?? '',
+      text: json['content'] ?? json['text'] ?? '', // Handle both API formats
+      isUser: _parseIsUser(json), // Use helper method to parse user type
+      timestamp: _parseTimestamp(json['timestamp']),
       type: MessageType.values.firstWhere(
         (e) => e.toString() == 'MessageType.${json['type']}',
         orElse: () => MessageType.text,
@@ -37,6 +37,34 @@ class ChatMessageModel extends ChatMessage {
       isSavedAsFaq: json['isSavedAsFaq'] ?? false,
       language: json['language'],
     );
+  }
+
+  // Helper method to parse user type from different API response formats
+  static bool _parseIsUser(Map<String, dynamic> json) {
+    // Handle new API format with message_type
+    if (json.containsKey('message_type')) {
+      return json['message_type'] == 'user';
+    }
+    // Handle old format with isUser
+    if (json.containsKey('isUser')) {
+      return json['isUser'] as bool;
+    }
+    // Default fallback
+    return false;
+  }
+
+  // Helper method to parse timestamp safely
+  static DateTime _parseTimestamp(dynamic timestamp) {
+    if (timestamp == null) return DateTime.now();
+    if (timestamp is String) {
+      try {
+        return DateTime.parse(timestamp);
+      } catch (e) {
+        return DateTime.now();
+      }
+    }
+    if (timestamp is DateTime) return timestamp;
+    return DateTime.now();
   }
 
   Map<String, dynamic> toJson() {

@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import '../../data/datasources/api_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/chat_service.dart';
+import '../../data/services/intelligent_chat_service.dart';
 import '../../data/services/content_service.dart';
 import '../../data/services/weekly_planning_service.dart';
 import '../../data/services/dashboard_service.dart';
@@ -32,6 +33,10 @@ class ServiceLocator {
       () => ChatService(_getIt<ApiClient>()),
     );
 
+    _getIt.registerLazySingleton<IntelligentChatService>(
+      () => IntelligentChatService(apiClient: _getIt<ApiClient>()),
+    );
+
     _getIt.registerLazySingleton<ContentService>(
       () => ContentService(_getIt<ApiClient>()),
     );
@@ -57,6 +62,8 @@ class ServiceLocator {
   static ApiClient get apiClient => _getIt<ApiClient>();
   static AuthService get authService => _getIt<AuthService>();
   static ChatService get chatService => _getIt<ChatService>();
+  static IntelligentChatService get intelligentChatService =>
+      _getIt<IntelligentChatService>();
   static ContentService get contentService => _getIt<ContentService>();
   static WeeklyPlanningService get weeklyPlanningService =>
       _getIt<WeeklyPlanningService>();

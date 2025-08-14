@@ -143,51 +143,64 @@ class QuickActionGrid extends StatelessWidget {
                       ],
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16), // Reduced padding
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min, // Use minimum space
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding:
+                                const EdgeInsets.all(12), // Reduced padding
                             decoration: BoxDecoration(
                               color: color.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius:
+                                  BorderRadius.circular(12), // Slightly smaller
                             ),
                             child: Icon(
                               icon,
-                              size: 32,
+                              size: 28, // Reduced icon size
                               color: color,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: isDarkMode
-                                      ? SahayakColors.chalkWhite
-                                      : SahayakColors.charcoal,
-                                ),
-                            textAlign: TextAlign.center,
+                          const SizedBox(height: 8), // Reduced spacing
+                          Flexible(
+                            // Make text flexible
+                            child: Text(
+                              title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall // Changed from titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isDarkMode
+                                        ? SahayakColors.chalkWhite
+                                        : SahayakColors.charcoal,
+                                  ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2, // Allow max 2 lines
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            subtitle,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: isDarkMode
-                                      ? SahayakColors.chalkWhite
-                                          .withOpacity(0.7)
-                                      : SahayakColors.charcoal.withOpacity(0.6),
-                                ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(height: 2), // Reduced spacing
+                          Flexible(
+                            // Make subtitle flexible
+                            child: Text(
+                              subtitle,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontSize: 11, // Slightly smaller font
+                                    color: isDarkMode
+                                        ? SahayakColors.chalkWhite
+                                            .withOpacity(0.7)
+                                        : SahayakColors.charcoal
+                                            .withOpacity(0.6),
+                                  ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
