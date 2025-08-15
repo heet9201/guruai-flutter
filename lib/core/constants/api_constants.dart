@@ -1,15 +1,18 @@
-class ApiConstants {
-  // Base URLs
-  static const String productionBaseUrl =
-      'https://guruai-backend-282796537878.us-central1.run.app/api/v1';
-  static const String developmentBaseUrl = 'http://127.0.0.1:5000/api/v1';
-  static const String webSocketUrl =
-      'wss://guruai-backend-282796537878.us-central1.run.app';
+import '../config/environment_config.dart';
 
-  // Environment
-  static const bool isProduction = true; // Change this for production
-  static String get baseUrl =>
-      isProduction ? productionBaseUrl : developmentBaseUrl;
+class ApiConstants {
+  // Get configuration from environment
+  static final EnvironmentConfig _config = EnvironmentConfig.instance;
+
+  // Base URLs - loaded from environment variables
+  static String get baseUrl => _config.apiBaseUrl;
+  static String get webSocketUrl => _config.webSocketUrl;
+
+  // API timeout
+  static Duration get timeout => _config.apiTimeout;
+
+  // API Key (if needed for authentication)
+  static String get apiKey => _config.apiKey;
 
   // API Endpoints
 

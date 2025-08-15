@@ -3,17 +3,22 @@ import '../../data/datasources/api_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/chat_service.dart';
 import '../../data/services/intelligent_chat_service.dart';
+import '../../data/services/lazy_chat_service.dart';
 import '../../data/services/content_service.dart';
 import '../../data/services/weekly_planning_service.dart';
 import '../../data/services/dashboard_service.dart';
 import '../../data/services/file_service.dart';
 import '../../data/services/speech_service.dart';
 import '../../data/services/websocket_service.dart';
+import '../config/environment_config.dart';
 
 class ServiceLocator {
   static final GetIt _getIt = GetIt.instance;
 
   static void setup() {
+    // Log environment configuration for debugging
+    EnvironmentConfig.instance.logConfiguration();
+
     // Register API Client (Singleton)
     _getIt.registerLazySingleton<ApiClient>(() {
       final apiClient = ApiClient();
@@ -35,6 +40,10 @@ class ServiceLocator {
 
     _getIt.registerLazySingleton<IntelligentChatService>(
       () => IntelligentChatService(apiClient: _getIt<ApiClient>()),
+    );
+
+    _getIt.registerLazySingleton<LazyChatService>(
+      () => LazyChatService(apiClient: _getIt<ApiClient>()),
     );
 
     _getIt.registerLazySingleton<ContentService>(
@@ -64,6 +73,7 @@ class ServiceLocator {
   static ChatService get chatService => _getIt<ChatService>();
   static IntelligentChatService get intelligentChatService =>
       _getIt<IntelligentChatService>();
+  static LazyChatService get lazyChatService => _getIt<LazyChatService>();
   static ContentService get contentService => _getIt<ContentService>();
   static WeeklyPlanningService get weeklyPlanningService =>
       _getIt<WeeklyPlanningService>();

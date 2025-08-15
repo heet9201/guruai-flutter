@@ -3,9 +3,13 @@ import 'dart:io';
 import '../models/api_models.dart';
 import '../datasources/api_service.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/config/environment_config.dart';
+import '../../core/services/mock_backend_service.dart';
 
 class AuthService {
   final ApiClient _apiClient;
+  final EnvironmentConfig _config = EnvironmentConfig.instance;
+  final MockBackendService _mockService = MockBackendService.instance;
 
   AuthService(this._apiClient);
 
@@ -24,40 +28,64 @@ class AuthService {
   Future<AuthResponse> login(String email, String password) async {
     final deviceId = await _getDeviceId();
 
+    // Use mock service if configured
+    if (_config.useMockService) {
+      print('🔧 AuthService: Using mock backend service');
+      try {
+        final mockResponse = await _mockService.login(email, password);
+
+        // Convert mock response to AuthResponse
+        return AuthResponse(
+          user: UserModel.fromJson(mockResponse['data']['user']),
+          token: mockResponse['data']['token'],
+          refreshToken: mockResponse['data']['refreshToken'],
+        );
+      } catch (e) {
+        print('❌ AuthService: Mock login failed: $e');
+        throw ApiError(message: 'Login failed: ${e.toString()}');
+      }
+    }
+
+    // Use real API service
     final loginRequest = LoginRequest(
       email: email,
       password: password,
       deviceId: deviceId,
     );
 
-    print('🔐 AuthService: Making login request...');
-    final response = await _apiClient.post<AuthResponse>(
-      ApiConstants.login,
-      data: loginRequest.toJson(),
-      fromJson: (json) {
-        print('🔍 AuthService: Raw response data: $json');
-        try {
-          return AuthResponse.fromJson(json);
-        } catch (e) {
-          print('❌ AuthService: Error parsing AuthResponse: $e');
-          rethrow;
-        }
-      },
-    );
+    print('🔐 AuthService: Making login request to real backend...');
+    try {
+      final response = await _apiClient.post<AuthResponse>(
+        ApiConstants.login,
+        data: loginRequest.toJson(),
+        fromJson: (json) {
+          print('🔍 AuthService: Raw response data: $json');
+          try {
+            return AuthResponse.fromJson(json);
+          } catch (e) {
+            print('❌ AuthService: Error parsing AuthResponse: $e');
+            rethrow;
+          }
+        },
+      );
 
-    print(
-        '🔍 AuthService: Response success: ${response.isSuccess}, data: ${response.data != null}');
-    if (response.isSuccess && response.data != null) {
-      final authResponse = response.data!;
       print(
-          '✅ AuthService: Login successful for user: ${authResponse.user.email}');
-      // Store tokens securely after successful login
-      await _apiClient.storeAuthTokens(
-          authResponse.token, authResponse.refreshToken);
-      return authResponse;
-    } else {
-      print('❌ AuthService: Login failed - Error: ${response.error}');
-      throw ApiError(message: response.error ?? 'Login failed');
+          '🔍 AuthService: Response success: ${response.isSuccess}, data: ${response.data != null}');
+      if (response.isSuccess && response.data != null) {
+        final authResponse = response.data!;
+        print(
+            '✅ AuthService: Login successful for user: ${authResponse.user.email}');
+        // Store tokens securely after successful login
+        await _apiClient.storeAuthTokens(
+            authResponse.token, authResponse.refreshToken);
+        return authResponse;
+      } else {
+        print('❌ AuthService: Login failed - Error: ${response.error}');
+        throw ApiError(message: response.error ?? 'Login failed');
+      }
+    } catch (e) {
+      print('❌ AuthService: Login error: $e');
+      throw ApiError(message: 'Login failed: ${e.toString()}');
     }
   }
 

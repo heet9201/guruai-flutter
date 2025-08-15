@@ -4,10 +4,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../core/theme/responsive_layout.dart';
 import '../bloc/app_bloc.dart';
 import '../bloc/app_state.dart';
-import '../bloc/chat/chat_bloc.dart';
 import '../screens/enhanced_dashboard_screen.dart';
 import '../screens/create_content_screen.dart';
-import '../screens/enhanced_intelligent_chat_screen.dart';
+import '../screens/optimized_lazy_chat_screen.dart';
 import '../screens/lesson_planner_screen.dart';
 import '../screens/profile_settings_screen.dart';
 import '../widgets/enhanced_instant_assist_fab_v2.dart';
@@ -153,12 +152,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     return [
       _buildTabNavigator(0, const EnhancedDashboardScreen()),
       _buildTabNavigator(1, const CreateContentScreen()),
-      _buildTabNavigator(
-          2,
-          BlocProvider(
-            create: (context) => ChatBloc(),
-            child: const EnhancedIntelligentChatScreen(),
-          )),
+      _buildTabNavigator(2, const OptimizedLazyChatScreen()),
       _buildTabNavigator(3, const LessonPlannerScreen()),
       _buildTabNavigator(4, const ProfileSettingsScreen()),
     ];

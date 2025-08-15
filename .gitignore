@@ -7,6 +7,28 @@
 .buildlog/
 .history
 
+# Environment and Configuration Files - SECURITY
+.env.local
+.env.production
+.env.*.local
+config/secrets.json
+config/keys.json
+*.key
+*.pem
+*.p12
+*.keystore
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+web/firebase-config.js
+
+# API Keys and Secrets
+**/secrets/
+**/keys/
+**/.secrets
+**/.keys
+**/api_keys.dart
+**/secret_keys.dart
+
 
 
 # Flutter repo-specific
@@ -129,3 +151,5 @@ COMPREHENSIVE_APP_DOCUMENTATION.md
 FLUTTER_API_OPTIMIZATION_GUIDE.md
 lib/docs/API_OPTIMIZATION_IMPLEMENTATION_GUIDE.md
 SESSION_MANAGEMENT_SUMMARY.md
+
+.env
