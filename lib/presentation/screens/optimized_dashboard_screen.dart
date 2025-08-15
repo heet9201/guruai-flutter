@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/bloc/optimized_bloc_patterns.dart';
 import '../../core/api/api_orchestrator.dart';
+import '../../core/api/enhanced_api_client.dart';
 import '../../data/services/optimized_dashboard_service.dart';
 
 /// Enhanced dashboard screen with comprehensive API optimizations
@@ -37,7 +38,8 @@ class _OptimizedDashboardScreenState extends State<OptimizedDashboardScreen>
 
     // Initialize optimized BLoC
     _bloc = OptimizedDashboardBloc(
-      OptimizedDashboardService(_orchestrator._apiClient),
+      OptimizedDashboardService(
+          EnhancedApiClient()), // Use direct client instead of orchestrator
     );
 
     // Setup lifecycle observers
@@ -445,7 +447,7 @@ class _OptimizedDashboardScreenState extends State<OptimizedDashboardScreen>
     return Column(
       children: activities.take(5).map((activity) {
         return ListTile(
-          leading: const Icon(Icons.activity_zone),
+          leading: const Icon(Icons.local_activity), // Fixed icon name
           title: Text(activity['title'] ?? 'Activity'),
           subtitle: Text(activity['description'] ?? 'No description'),
           trailing: Text(activity['time'] ?? ''),

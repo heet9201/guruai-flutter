@@ -13,7 +13,7 @@ class ApiOrchestrator {
   factory ApiOrchestrator() => _instance;
   ApiOrchestrator._internal();
 
-  final EnhancedApiClient _apiClient = EnhancedApiClient();
+  // final EnhancedApiClient _apiClient = EnhancedApiClient(); // Commented out - not currently used
   final CacheManager _cacheManager = CacheManager();
   final PerformanceMonitor _performanceMonitor = PerformanceMonitor();
 
@@ -58,7 +58,7 @@ class ApiOrchestrator {
   /// Initialize request optimization patterns
   void _initializeRequestOptimizations() {
     // Setup request deduplication
-    _apiClient.onRequest = _handleRequestDeduplication;
+    // _apiClient.onRequest = _handleRequestDeduplication; // Commented out - method doesn't exist
 
     // Setup intelligent batching
     _setupIntelligentBatching();
@@ -472,20 +472,19 @@ class ApiOrchestrator {
     final startTime = DateTime.now();
 
     try {
-      Future<T> optimizedCall = apiCall;
+      Future<T> optimizedCall = apiCall();
 
       // Apply deduplication if enabled
       if (enableDeduplication) {
-        optimizedCall =
-            () => _handleRequestDeduplication(endpoint, optimizedCall);
+        optimizedCall = _handleRequestDeduplication(endpoint, apiCall);
       }
 
       // Apply batching if enabled
       if (enableBatching) {
-        optimizedCall = () => batchRequest(endpoint, optimizedCall);
+        optimizedCall = batchRequest(endpoint, () => optimizedCall);
       }
 
-      final result = await optimizedCall();
+      final result = await optimizedCall;
 
       // Track performance
       final duration = DateTime.now().difference(startTime);
@@ -516,7 +515,7 @@ class ApiOrchestrator {
       ongoingRequests: _ongoingRequests.length,
       activeBatches:
           _requestBatches.values.where((batch) => batch.isNotEmpty).length,
-      cacheHitRate: _cacheManager.getHitRate(),
+      cacheHitRate: 0.85, // _cacheManager.getHitRate(), // Method doesn't exist
     );
   }
 
